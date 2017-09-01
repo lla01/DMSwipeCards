@@ -15,12 +15,12 @@ protocol DMSwipeCardDelegate: class {
   func cardTapped(_ card: DMSwipeCard)
 }
 
-class DMSwipeCard: UIView {
+public class DMSwipeCard: UIView {
 
 	weak var delegate: DMSwipeCardDelegate?
 	var obj: Any!
-	var leftOverlay: UIView?
-	var rightOverlay: UIView?
+	public var leftOverlay: UIView?
+	public var rightOverlay: UIView?
 
 	private let actionMargin: CGFloat = 120.0
 	private let rotationStrength: CGFloat = 320.0
@@ -45,7 +45,7 @@ class DMSwipeCard: UIView {
     self.addGestureRecognizer(tapGesture)
   }
 
-	required init?(coder aDecoder: NSCoder) {
+	required public init?(coder aDecoder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
 
@@ -141,7 +141,7 @@ class DMSwipeCard: UIView {
 }
 
 extension DMSwipeCard: UIGestureRecognizerDelegate {
-	func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+	public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
 		return true
 	}
 }

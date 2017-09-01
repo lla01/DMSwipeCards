@@ -21,11 +21,14 @@ public protocol DMSwipeCardsViewDelegate: class {
 	func reachedEndOfStack()
 }
 
+
 public class DMSwipeCardsView<Element>: UIView {
 
 	public weak var delegate: DMSwipeCardsViewDelegate?
 	public var bufferSize: Int = 2
-
+    
+    public var viewAnimator:((_ card: DMSwipeCard, _ mode: SwipeMode)->Void)?
+    
 	fileprivate let viewGenerator: ViewGenerator
 	fileprivate let overlayGenerator: OverlayGenerator?
 	fileprivate var allCards = [Element]()
@@ -87,14 +90,18 @@ public class DMSwipeCardsView<Element>: UIView {
 		}
 	}
 
-	func swipeTopCardRight() {
-		// TODO: not yet supported
-		fatalError("Not yet supported")
-	}
+	public func swipeTopCardRight() {
+        guard let card = loadedCards.first else { return }
+        let effectiveAnimator = viewAnimator ?? defaultAnimatorFunction
+        effectiveAnimator(card, .right)
+        cardSwipedRight(card)
+    }
 
-	func swipeTopCardLeft() {
-		// TODO: not yet supported
-		fatalError("Not yet supported")
+	public func swipeTopCardLeft() {
+        guard let card = loadedCards.first else { return }
+        let effectiveAnimator = viewAnimator ?? defaultAnimatorFunction
+        effectiveAnimator(card, .left)
+        cardSwipedLeft(card)
 	}
 }
 
@@ -151,4 +158,27 @@ extension DMSwipeCardsView {
 		cardView.configureOverlays()
 		return cardView
 	}
+}
+
+
+extension DMSwipeCardsView {
+    
+    func defaultAnimatorFunction(_ card: DMSwipeCard, _ mode: SwipeMode) {
+        // move view along a staight path to the left or right until it has left the container frame
+        // at the same time, tilt the view in the same direction by 30°
+        // we translate 1 window width to the left/right plus 0.3 to make sure the tilted corners disappear completely
+        guard let window = self.window else { return }
+        let overlay = (mode == .right) ? card.rightOverlay : card.leftOverlay
+        let translationAmount = card.convert(window.frame, from: nil).size.width * ((mode == .right) ? 1.3 : -1.3)
+        let rotationAmount = CGFloat.pi / 6.0 * ((mode == .right) ? 1.0 : -1.0)
+        
+        var newTransform = card.transform.translatedBy(x: translationAmount, y: -30)
+        newTransform = newTransform.rotated(by: rotationAmount)
+        UIView.animate(withDuration: 0.2) {
+            overlay?.alpha = 1.0
+        }
+        UIView.animate(withDuration: 0.4) {
+            card.transform = newTransform
+        }
+    }
 }
