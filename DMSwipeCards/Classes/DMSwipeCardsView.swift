@@ -27,7 +27,7 @@ public class DMSwipeCardsView<Element>: UIView {
 	public weak var delegate: DMSwipeCardsViewDelegate?
 	public var bufferSize: Int = 2
     
-    public var viewAnimator:((_ card: DMSwipeCard, _ mode: SwipeMode)->Void)?
+    public var viewAnimator:((_ card: DMSwipeCard, _ mode: SwipeMode, _ completion: () -> Void)->Void)?
     
 	fileprivate let viewGenerator: ViewGenerator
 	fileprivate let overlayGenerator: OverlayGenerator?
@@ -93,15 +93,19 @@ public class DMSwipeCardsView<Element>: UIView {
 	public func swipeTopCardRight() {
         guard let card = loadedCards.first else { return }
         let effectiveAnimator = viewAnimator ?? defaultAnimatorFunction
-        effectiveAnimator(card, .right)
-        cardSwipedRight(card)
+        effectiveAnimator(card, .right) {
+            self.cardSwipedRight(card)
+            card.removeFromSuperview()
+        }
     }
 
 	public func swipeTopCardLeft() {
         guard let card = loadedCards.first else { return }
         let effectiveAnimator = viewAnimator ?? defaultAnimatorFunction
-        effectiveAnimator(card, .left)
-        cardSwipedLeft(card)
+        effectiveAnimator(card, .left) {
+            self.cardSwipedLeft(card)
+            card.removeFromSuperview()
+        }
 	}
 }
 
@@ -163,7 +167,7 @@ extension DMSwipeCardsView {
 
 extension DMSwipeCardsView {
     
-    func defaultAnimatorFunction(_ card: DMSwipeCard, _ mode: SwipeMode) {
+    func defaultAnimatorFunction(_ card: DMSwipeCard, _ mode: SwipeMode, _ completion: @escaping () -> Void) {
         // move view along a staight path to the left or right until it has left the container frame
         // at the same time, tilt the view in the same direction by 30°
         // we translate 1 window width to the left/right plus 0.3 to make sure the tilted corners disappear completely
@@ -177,8 +181,12 @@ extension DMSwipeCardsView {
         UIView.animate(withDuration: 0.2) {
             overlay?.alpha = 1.0
         }
-        UIView.animate(withDuration: 0.4) {
+        UIView.animate(withDuration: 0.4, animations: {
             card.transform = newTransform
-        }
+        }, completion: { finished in
+            if finished {
+                completion()
+            }
+        })
     }
 }
