@@ -61,7 +61,7 @@ public class DMSwipeCard: UIView {
 		}
 	}
 
-	func dragEvent(gesture: UIPanGestureRecognizer) {
+	@objc func dragEvent(gesture: UIPanGestureRecognizer) {
 		xFromCenter = gesture.translation(in: self).x
 		yFromCenter = gesture.translation(in: self).y
 
@@ -87,7 +87,7 @@ public class DMSwipeCard: UIView {
 		}
 	}
 
-  func tapEvent(gesture: UITapGestureRecognizer) {
+  @objc func tapEvent(gesture: UITapGestureRecognizer) {
     self.delegate?.cardTapped(self)
   }
 
